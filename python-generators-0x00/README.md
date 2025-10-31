@@ -34,3 +34,17 @@ def stream_users():
         dict: A dictionary containing user information with the fields:
               user_id, name, email, and age.
     """
+
+
+
+
+
+# 1-batch_processing.py Description
+
+This script extends the concept of row-by-row streaming by introducing batch processing.
+Instead of fetching one row at a time, it retrieves and processes data in batches — improving performance while maintaining memory efficiency.
+
+# The script defines two main functions:
+
+stream_users_in_batches(batch_size) → Fetches user data in configurable batch sizes using a generator
+batch_processing(batch_size) → Processes each batch to filter users over the age of 25
