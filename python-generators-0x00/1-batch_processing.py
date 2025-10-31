@@ -55,6 +55,7 @@ def batch_processing(batch_size):
         for user in batch:
             if user.get("age", 0) > 25:
                 print(user)
+    return  # signals generator completion, no data returned
 # Example: Call the generator directly
 for batch in stream_users_in_batches(10):
     print(batch)  # prints each batch of 10 users
