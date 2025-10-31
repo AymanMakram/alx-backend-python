@@ -10,3 +10,27 @@ As part of this exercise, we implement a script `seed.py` that:
 - Creates a table **`user_data`**.  
 - Populates the table with data from a CSV file (`user_data.csv`).  
 - Demonstrates a **Python generator** that streams rows from the database one by one.
+
+# 0-stream_users.py
+
+## Script Overview
+
+This script defines a **Python generator function** that streams rows from a MySQL database table one at a time.  
+It connects to the `ALX_prodev` database, retrieves data from the `user_data` table, and yields each row as a dictionary.
+
+The use of a generator makes this approach **memory-efficient**, as it fetches and returns rows lazily — ideal for large datasets or data pipelines that should not load the entire result set into memory.
+
+---
+
+## Function Definition
+
+```python
+def stream_users():
+    """
+    Connects to the MySQL database ALX_prodev and yields rows
+    from the user_data table one at a time.
+
+    Yields:
+        dict: A dictionary containing user information with the fields:
+              user_id, name, email, and age.
+    """
