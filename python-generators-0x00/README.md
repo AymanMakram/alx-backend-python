@@ -48,3 +48,15 @@ Instead of fetching one row at a time, it retrieves and processes data in batche
 
 stream_users_in_batches(batch_size) → Fetches user data in configurable batch sizes using a generator
 batch_processing(batch_size) → Processes each batch to filter users over the age of 25
+
+# 2-lazy_paginate.py Description
+This script introduces lazy pagination using Python generators.
+Instead of loading all user data at once, it fetches and processes data page by page from the MySQL database ALX_prodev.
+Each page is retrieved only when required, optimizing both performance and memory usage — a key technique for working with large datasets.
+
+The module defines two core functions:
+__________________________________________________________________________________________________________________________________________
+|Function	| Description|
+|paginate_users(page_size, offset)|	Fetches a single page of users from the database with a specified limit (page_size) and offset.|
+|lazy_pagination(page_size)|	A generator function that lazily iterates through the entire dataset, yielding one page of users at a time.|
+__________________________________________________________________________________________________________________________________________
