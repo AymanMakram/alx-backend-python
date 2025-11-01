@@ -22,23 +22,6 @@ The use of a generator makes this approach **memory-efficient**, as it fetches a
 
 ---
 
-## Function Definition
-
-```python
-def stream_users():
-    """
-    Connects to the MySQL database ALX_prodev and yields rows
-    from the user_data table one at a time.
-
-    Yields:
-        dict: A dictionary containing user information with the fields:
-              user_id, name, email, and age.
-    """
-
-
-
-
-
 # 1-batch_processing.py Description
 
 This script extends the concept of row-by-row streaming by introducing batch processing.
@@ -55,8 +38,9 @@ Instead of loading all user data at once, it fetches and processes data page by 
 Each page is retrieved only when required, optimizing both performance and memory usage — a key technique for working with large datasets.
 
 The module defines two core functions:
-__________________________________________________________________________________________________________________________________________
+
 |Function	| Description|
 |paginate_users(page_size, offset)|	Fetches a single page of users from the database with a specified limit (page_size) and offset.|
 |lazy_pagination(page_size)|	A generator function that lazily iterates through the entire dataset, yielding one page of users at a time.|
-__________________________________________________________________________________________________________________________________________
+
+
