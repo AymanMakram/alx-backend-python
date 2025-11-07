@@ -3,18 +3,19 @@
 Advanced Python: Using Decorators and Context Managers
 -------------------------------------------------------
 Task: Create a decorator that logs SQL queries executed by any function.
-This implementation also uses a context manager to handle the database connection.
+Includes timestamped logs and safe resource handling using context managers.
 """
 
 import sqlite3
 import functools
+from datetime import datetime
 from contextlib import contextmanager
 
 
 # Context Manager for handling DB connections
 @contextmanager
 def db_connection(db_name='users.db'):
-    """Context manager to handle database connection."""
+    """Context manager to handle database connection safely."""
     conn = sqlite3.connect(db_name)
     try:
         yield conn
@@ -24,16 +25,20 @@ def db_connection(db_name='users.db'):
 
 # Decorator to log SQL queries before executing the function
 def log_queries(func):
-    """Decorator that logs SQL queries executed by a function."""
+    """Decorator that logs SQL queries executed by a function with timestamps."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
+        # Retrieve query argument (positional or keyword)
         query = kwargs.get('query') if 'query' in kwargs else args[0] if args else None
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         if query:
-            print(f"[LOG] Executing SQL Query: {query}")
+            print(f"[{timestamp}] [LOG] Executing SQL Query: {query}")
         else:
-            print("[LOG] No SQL query provided.")
+            print(f"[{timestamp}] [LOG] No SQL query provided.")
+
         result = func(*args, **kwargs)
-        print("[LOG] Query execution completed.\n")
+        print(f"[{timestamp}] [LOG] Query execution completed.\n")
         return result
     return wrapper
 
