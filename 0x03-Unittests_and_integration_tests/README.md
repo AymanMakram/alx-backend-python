@@ -61,6 +61,10 @@ Fetches JSON data from a URL using `requests.get` and returns the parsed result.
 - Replaces the `requests.get` call with a mock that simulates `.json()` returning `test_payload`.
 
 ---
+### 3️⃣ TestMemoize
+
+Purpose:
+Tests the memoize decorator to ensure that results are cached and the decorated method is executed only once.
 
 ## ⚙️ How to Run Tests
 
@@ -68,3 +72,5 @@ From the root of your repository, execute:
 
 ```bash
 python3 -m unittest 0x03-Unittests_and_integration_tests/test_utils.py
+
+
