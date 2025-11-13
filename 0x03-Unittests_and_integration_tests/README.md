@@ -65,12 +65,66 @@ Fetches JSON data from a URL using `requests.get` and returns the parsed result.
 
 Purpose:
 Tests the memoize decorator to ensure that results are cached and the decorated method is executed only once.
+# Unit Tests for `client.GithubOrgClient`
+
+This directory contains unit tests for the `GithubOrgClient` class in `client.py`, 
+part of the **ALX Backend Python** project *0x03 - Unittests and Integration Tests*.
+
+---
+
+## 📘 Overview
+
+The goal of these tests is to ensure that the `GithubOrgClient` class interacts with 
+the GitHub API correctly **without making any real HTTP requests**.
+
+All tests use Python's built-in `unittest` framework and the `parameterized` library 
+for running multiple test cases efficiently.
+
+---
+
+## 🧪 Tested Class
+
+### `GithubOrgClient`
+
+**Purpose:**  
+Wraps GitHub API calls for a given organization.
+
+**Test class:** `TestGithubOrgClient`
+
+| Test Name | Description | Expected Result |
+|-----------|------------|----------------|
+| `test_org` | Tests that `GithubOrgClient.org` returns the correct value and calls `get_json` with the expected URL | Returns mocked JSON response |
+
+---
+
+### 🔹 Implementation Details
+
+- **Parameterized Testing:**  
+  Uses `@parameterized.expand` to run the same test with multiple organizations:
+  - `"google"`
+  - `"abc"`
+
+- **Mocking External Calls:**  
+  Uses `@patch("client.get_json")` to mock `get_json`:
+  - Ensures **no external HTTP calls** are made.
+  - Simulates the JSON response (`{"key": "value"}`) for testing.
+
+- **Assertions:**
+  - `mock_get_json.assert_called_once_with(...)` verifies the correct URL is used.
+  - `self.assertEqual(result, {"key": "value"})` verifies the `org` property returns the expected data.
+
+---
 
 ## ⚙️ How to Run Tests
 
-From the root of your repository, execute:
+From the root of your repository:
+
+```bash
+python -m unittest 0x03-Unittests_and_integration_tests.test_client
 
 ```bash
 python3 -m unittest 0x03-Unittests_and_integration_tests/test_utils.py
+
+
 
 
