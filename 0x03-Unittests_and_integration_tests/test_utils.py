@@ -17,7 +17,11 @@ class TestAccessNestedMap(unittest.TestCase):
         ({"a": {"b": 2}}, ("a",), {"b": 2}),
         ({"a": {"b": 2}}, ("a", "b"), 2),
     ])
-    def test_access_nested_map(self, nested_map: dict, path: tuple, expected: object) -> None:
+    def test_access_nested_map(
+            self,
+            nested_map: dict,
+            path: tuple,
+            expected: object) -> None:
         """Test that access_nested_map returns the expected result."""
         self.assertEqual(access_nested_map(nested_map, path), expected)
 
@@ -25,11 +29,13 @@ class TestAccessNestedMap(unittest.TestCase):
         ({}, ("a",)),
         ({"a": 1}, ("a", "b")),
     ])
-    def test_access_nested_map_exception(self, nested_map: dict, path: tuple) -> None:
+    def test_access_nested_map_exception(
+            self, nested_map: dict, path: tuple) -> None:
         """Test that access_nested_map raises KeyError with the correct message."""
         with self.assertRaises(KeyError) as context:
             access_nested_map(nested_map, path)
         self.assertEqual(str(context.exception), f"'{path[-1]}'")
+
 
 class TestGetJson(unittest.TestCase):
     """Test cases for the get_json function."""
@@ -39,7 +45,11 @@ class TestGetJson(unittest.TestCase):
         ("http://holberton.io", {"payload": False}),
     ])
     @patch("utils.requests.get")
-    def test_get_json(self, test_url: str, test_payload: dict, mock_get: Mock) -> None:
+    def test_get_json(
+            self,
+            test_url: str,
+            test_payload: dict,
+            mock_get: Mock) -> None:
         """Test that get_json returns the expected JSON payload."""
         mock_response = Mock()
         mock_response.json.return_value = test_payload
@@ -49,6 +59,7 @@ class TestGetJson(unittest.TestCase):
 
         mock_get.assert_called_once_with(test_url)
         self.assertEqual(result, test_payload)
+
 
 class TestMemoize(unittest.TestCase):
     """Test cases for the memoize decorator."""
@@ -73,6 +84,7 @@ class TestMemoize(unittest.TestCase):
             self.assertEqual(obj.a_property, 42)
             self.assertEqual(obj.a_property, 42)
             mock_method.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
