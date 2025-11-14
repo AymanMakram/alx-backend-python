@@ -7,10 +7,7 @@ import unittest
 from unittest.mock import patch, PropertyMock, MagicMock
 from parameterized import parameterized
 from client import GithubOrgClient
-# Note: You need to ensure 'fixtures' and 'TEST_PAYLOAD' are available, 
-# but for the single test fix, they are not strictly needed. 
-# We'll use a local payload for test_public_repos.
-# from fixtures import TEST_PAYLOAD 
+# from fixtures import TEST_PAYLOAD # Keep this commented if fixtures file is not provided
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -27,7 +24,7 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient(org_name)
         self.assertEqual(client.org, payload)
         mock_get_json.assert_called_once_with(
-            f"https://api.github.com/orgs/{org_name}"
+            f"https://api.github.com/orgs/{orgs_name}"
         )
 
     def test_public_repos_url(self):
@@ -45,42 +42,40 @@ class TestGithubOrgClient(unittest.TestCase):
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json: MagicMock):
         """
-        Test public_repos method.
-        Uses @patch for get_json and patch as context manager for _public_repos_url.
+        Tests public_repos using @patch for get_json and patch context manager
+        for _public_repos_url, verifying calls and results.
         """
+        # 1. Define the mock payload and expected result
         mock_payload = [
-            {"name": "repo1"},
-            {"name": "repo2"},
-            {"name": "repo3"},
+            {"name": "repo1", "license": {"key": "mit"}}, # Adding minimal extra keys for realism
+            {"name": "repo2", "license": {"key": "apache-2.0"}},
+            {"name": "repo3", "license": None},
         ]
-        # 1. Configure the mocked get_json to return the payload
         mock_get_json.return_value = mock_payload
-        
-        # The expected list of repository names
-        expected = ["repo1", "repo2", "repo3"]
+        expected_repos = ["repo1", "repo2", "repo3"]
 
-        # 2. Use patch as a context manager to mock the _public_repos_url property
+        # 2. Use patch as a context manager for the property
         with patch(
             "client.GithubOrgClient._public_repos_url",
             new_callable=PropertyMock
         ) as mock_repos_url:
 
-            # Configure the mocked property's return value
-            dummy_repos_url = "http://example.com/repos"
-            mock_repos_url.return_value = dummy_repos_url
+            # Define the dummy URL the mocked property will return
+            DUMMY_URL = "http://example.com/repos"
+            mock_repos_url.return_value = DUMMY_URL
             
-            # Instantiate the client and call the method under test
+            # Instantiate client and call method under test
             client = GithubOrgClient("test")
             result = client.public_repos()
 
             # 3. Test that the list of repos is what you expect
-            self.assertEqual(result, expected)
+            self.assertEqual(result, expected_repos)
 
             # 4. Test that the mocked property was called once
             mock_repos_url.assert_called_once()
             
-            # 5. Test that the mocked get_json was called once (with the dummy URL)
-            mock_get_json.assert_called_once_with(dummy_repos_url)
+            # 5. Test that the mocked get_json was called once with the DUMMY_URL
+            mock_get_json.assert_called_once_with(DUMMY_URL)
 
 
     @parameterized.expand([
@@ -124,10 +119,8 @@ class TestGithubOrgClient(unittest.TestCase):
 
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests (task 6)"""
-
-    # Note: Requires 'fixtures' and 'TEST_PAYLOAD' to be imported and defined
-    # Mocking implementation for integration tests is kept as provided
-
+    # ... Assuming integration tests rely on external fixtures ...
+    pass
     # @classmethod
     # def setUpClass(cls):
     #     """Mock get_json and org payload"""
