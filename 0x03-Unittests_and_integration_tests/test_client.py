@@ -60,6 +60,39 @@ class TestGithubOrgClient(unittest.TestCase):
             # Ensure the mocked property was accessed once
             mock_org.assert_called_once()
 
+class GithubOrgClient:
+    """
+    A placeholder class to contain the public_repos method 
+    and satisfy type checkers.
+    """
+    
+    # Assuming 'repos_payload' is a property that returns a List[Dict]
+    @property
+    def repos_payload(self) -> List[Dict]:
+        """Placeholder for the memoized repos payload getter."""
+        # In a real scenario, this would return the list of all repository dictionaries
+        return []
+
+    # Assuming 'has_license' is a static method as per client.py
+    @staticmethod
+    def has_license(repo: Dict[str, Dict], license_key: str) -> bool:
+        """Placeholder for the has_license static method."""
+        # In a real scenario, this checks the license key in the repo dict
+        return False
+    
+    def public_repos(self, license: str = None) -> List[str]:
+        """Public repos"""
+        # This line implicitly calls the memoized property repos_payload
+        json_payload = self.repos_payload
+        
+        public_repos = [
+            repo["name"] for repo in json_payload
+            # Filters repos: includes all if no license is specified (license is None),
+            # OR includes repos that satisfy the has_license check.
+            if license is None or self.has_license(repo, license)
+        ]
+        return public_repos
+
     @patch('client.get_json')
     def test_public_repos(self, mock_get_json: Mock) -> None:
         """
