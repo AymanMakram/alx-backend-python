@@ -7,6 +7,7 @@ import unittest
 from unittest.mock import patch, PropertyMock, MagicMock
 from parameterized import parameterized
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 # from fixtures import TEST_PAYLOAD # Keep this commented if fixtures file is not provided
 
 
@@ -121,40 +122,40 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests (task 6)"""
     # ... Assuming integration tests rely on external fixtures ...
     pass
-    # @classmethod
-    # def setUpClass(cls):
-    #     """Mock get_json and org payload"""
-    #     cls.get_patcher = patch("client.get_json", return_value=TEST_PAYLOAD[0][1])
-    #     cls.mock_get_json = cls.get_patcher.start()
+    @classmethod
+    def setUpClass(cls):
+        """Mock get_json and org payload"""
+        cls.get_patcher = patch("client.get_json", return_value=TEST_PAYLOAD[0][1])
+        cls.mock_get_json = cls.get_patcher.start()
 
-    #     cls.repos_url_patcher = patch(
-    #         "client.GithubOrgClient._public_repos_url",
-    #         new_callable=PropertyMock,
-    #         return_value=TEST_PAYLOAD[0][1]["repos_url"]
-    #     )
-    #     cls.mock_repos_url = cls.repos_url_patcher.start()
+        cls.repos_url_patcher = patch(
+            "client.GithubOrgClient._public_repos_url",
+            new_callable=PropertyMock,
+            return_value=TEST_PAYLOAD[0][1]["repos_url"]
+        )
+        cls.mock_repos_url = cls.repos_url_patcher.start()
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     """Stop all patches"""
-    #     cls.get_patcher.stop()
-    #     cls.repos_url_patcher.stop()
+    @classmethod
+    def tearDownClass(cls):
+        """Stop all patches"""
+        cls.get_patcher.stop()
+        cls.repos_url_patcher.stop()
 
-    # def test_public_repos(self):
-    #     """Integration test for public_repos"""
-    #     client = GithubOrgClient("google")
-    #     expected = [repo["name"] for repo in TEST_PAYLOAD[1][1]]
-    #     self.assertEqual(client.public_repos(), expected)
+    def test_public_repos(self):
+        """Integration test for public_repos"""
+        client = GithubOrgClient("google")
+        expected = [repo["name"] for repo in TEST_PAYLOAD[1][1]]
+        self.assertEqual(client.public_repos(), expected)
 
-    # def test_public_repos_with_license(self):
-    #     """Integration test filtering by license"""
-    #     client = GithubOrgClient("google")
-    #     expected = [
-    #         repo["name"]
-    #         for repo in TEST_PAYLOAD[1][1]
-    #         if repo["license"]["key"] == "apache-2.0"
-    #     ]
-    #     self.assertEqual(client.public_repos("apache-2.0"), expected)
+    def test_public_repos_with_license(self):
+        """Integration test filtering by license"""
+        client = GithubOrgClient("google")
+        expected = [
+            repo["name"]
+            for repo in TEST_PAYLOAD[1][1]
+            if repo["license"]["key"] == "apache-2.0"
+        ]
+        self.assertEqual(client.public_repos("apache-2.0"), expected)
 
 if __name__ == "__main__":
     unittest.main()
