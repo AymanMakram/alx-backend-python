@@ -6,6 +6,7 @@ from unittest.mock import patch, PropertyMock
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
 
+
 class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient"""
     @patch('client.get_json')
@@ -48,6 +49,8 @@ class TestGithubOrgClient(unittest.TestCase):
         ({"license": {"key": "my_license"}}, "my_license", True),
         ({"license": {"key": "other_license"}}, "my_license", False),
     ])
+
+
     def test_has_license(self, repo, license_key, expected):
         """Test has_license"""
         result = GithubOrgClient.has_license(repo, license_key)
@@ -74,6 +77,7 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected_repos)
         # Assert that the mock property was accessed exactly once
         mock_repos.assert_called_once()
+
 
     @patch('client.GithubOrgClient.repos', new_callable=PropertyMock)
     def test_public_repos_with_license(self, mock_repos):
@@ -115,15 +119,18 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             cls.repos_payload,   # response for second repos payload access
         ]
 
+
     @classmethod
     def tearDownClass(cls):
         """Stop patcher"""
         cls.get_patcher.stop()
 
+
     def test_public_repos(self):
         """Test public_repos returns full list"""
         client = GithubOrgClient("google")
         self.assertEqual(client.public_repos(), self.expected_repos)
+
 
     def test_public_repos_with_license(self):
         """Test public_repos filters by license"""
@@ -132,6 +139,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             client.public_repos("apache-2.0"),
             self.apache2_repos
         )
+
 
     @patch('client.GithubOrgClient.repos', new_callable=PropertyMock)
     def test_public_repos(self, mock_repos):
@@ -153,6 +161,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected_repos)
         # Assert that the mock property was accessed exactly once
         mock_repos.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
