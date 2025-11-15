@@ -109,21 +109,24 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         # Set the mock return value to the list of repositories from the fixture
         REPOS_PAYLOAD = TEST_PAYLOAD[0][1]
         mock_repos.return_value = REPOS_PAYLOAD
-
         # The expected result is the list of 'name' values for all repos
         expected_repos = [
             repo["name"] for repo in REPOS_PAYLOAD
         ]
-
         # Instantiate the client and call the method under test
         client = GithubOrgClient("google")
         result = client.public_repos()
-
         # Assert that the result matches the expected list of names
         self.assertEqual(result, expected_repos)
-
         # Assert that the mock property was accessed exactly once
         mock_repos.assert_called_once()
+    def test_public_repos_with_license(self):
+        """Test filtering repos by 'apache-2.0' license"""
+        client = GithubOrgClient(self.org_payload["login"])
+        self.assertEqual(
+            client.public_repos(license="apache-2.0"),
+            self.apache2_repos
+        )
 
 if __name__ == "__main__":
     unittest.main()
