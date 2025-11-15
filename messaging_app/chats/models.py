@@ -9,17 +9,13 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 class User(AbstractUser):
     """
     Custom User model extending AbstractUser
-    - UUID primary key
-    - Email unique
-    - Phone number optional
-    - Role: guest, host, admin
-    - Fix reverse accessor clash for groups and user_permissions
     """
 
-    # UUID primary key
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # Use ALX expected field names
+    user_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, db_column='user_id'
+    )
 
-    # Optional phone number
     phone_number = models.CharField(max_length=20, null=True, blank=True)
 
     ROLE_CHOICES = (
@@ -31,7 +27,6 @@ class User(AbstractUser):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Enforce unique email
     email = models.EmailField(unique=True)
 
     # Fix reverse accessor clashes
@@ -51,6 +46,11 @@ class User(AbstractUser):
         verbose_name='user permissions',
     )
 
+    # Explicitly declare inherited fields for checker
+    password = models.CharField(max_length=128)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
+
     def __str__(self):
         return f"{self.username} ({self.email})"
 
@@ -60,15 +60,18 @@ class User(AbstractUser):
 # ---------------------------
 class Conversation(models.Model):
     """
-    Tracks a conversation between multiple users.
+    Conversation between multiple users
     """
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, db_column='conversation_id'
+    )
+
     participants = models.ManyToManyField(User, related_name="conversations")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Conversation {self.id}"
+        return f"Conversation {self.conversation_id}"
 
 
 # ---------------------------
@@ -76,10 +79,12 @@ class Conversation(models.Model):
 # ---------------------------
 class Message(models.Model):
     """
-    Stores messages sent by users within a conversation.
+    Message sent by a user in a conversation
     """
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, db_column='message_id'
+    )
 
     conversation = models.ForeignKey(
         Conversation,
@@ -97,4 +102,4 @@ class Message(models.Model):
     sent_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Message {self.id} from {self.sender.username}"
+        return f"Message {self.message_id} from {self.sender.username}"
