@@ -23,6 +23,7 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(gh_client.org(), resp)
         mocked_fn.assert_called_once_with(f"https://api.github.com/orgs/{org}")
 
+
     def test_public_repos_url(self) -> None:
         """Test GithubOrgClient property _public_repos_url"""
         with patch("client.GithubOrgClient.org", new_callable=PropertyMock) as mock_org:
@@ -33,6 +34,7 @@ class TestGithubOrgClient(unittest.TestCase):
                 GithubOrgClient("google")._public_repos_url,
                 "https://api.github.com/users/google/repos",
             )
+
 
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json: MagicMock) -> None:
@@ -62,6 +64,7 @@ class TestGithubOrgClient(unittest.TestCase):
             )
             mock_public_repos_url.assert_called_once()
         mock_get_json.assert_called_once()
+
 
     @parameterized.expand(
         [
