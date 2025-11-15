@@ -11,6 +11,7 @@ class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient"""
 
     @patch('client.get_json')
+
     def test_public_repos(self, mock_get_json):
         """Test GithubOrgClient.public_repos returns expected repos list"""
         # Mock payload returned by get_json
@@ -20,9 +21,7 @@ class TestGithubOrgClient(unittest.TestCase):
             {"name": "repo3", "license": {"key": "mit"}},
         ]
         mock_get_json.return_value = repo_payload
-
         client = GithubOrgClient("test_org")
-
         # Patch the _public_repos_url property to a dummy URL
         with patch.object(
             GithubOrgClient,
@@ -32,20 +31,16 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_repo_url.return_value = (
                 "https://api.github.com/orgs/test_org/repos"
             )
-
             # Test without license filter
             expected_repos = ["repo1", "repo2", "repo3"]
             self.assertEqual(client.public_repos(), expected_repos)
-
             # Test with license filter
             expected_mit_repos = ["repo1", "repo3"]
             self.assertEqual(
                 client.public_repos(license="mit"), expected_mit_repos
             )
-
             # Ensure the mocked property was accessed once
             mock_repo_url.assert_called_once()
-
         # Ensure get_json was called once with the mocked URL
         mock_get_json.assert_called_once_with(
             "https://api.github.com/orgs/test_org/repos"
@@ -57,6 +52,7 @@ class TestGithubOrgClient(unittest.TestCase):
         ({"license": {"key": "my_license"}}, "my_license", True),
         ({"license": {"key": "other_license"}}, "my_license", False),
     ])
+
     def test_has_license(self, repo, license_key, expected):
         """Test has_license"""
         result = GithubOrgClient.has_license(repo, license_key)
@@ -65,7 +61,7 @@ class TestGithubOrgClient(unittest.TestCase):
 # ============================================================
 # 8. Integration Tests
 # ============================================================
-@parameterized_class(("org_payload", "repos_payload", "expected_repos", "apache2_repos"), TEST_PAYLOAD)
+@parameterized_class(("repos_payload", "expected_repos", "apache2_repos"), TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient"""
 
@@ -101,6 +97,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         )
 
     @patch('client.GithubOrgClient.repos', new_callable=PropertyMock)
+
     def test_public_repos(self, mock_repos):
         """
         Tests that public_repos returns the expected list of public repository names
@@ -120,6 +117,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected_repos)
         # Assert that the mock property was accessed exactly once
         mock_repos.assert_called_once()
+
     def test_public_repos_with_license(self):
         """Test filtering repos by 'apache-2.0' license"""
         client = GithubOrgClient(self.org_payload["login"])
