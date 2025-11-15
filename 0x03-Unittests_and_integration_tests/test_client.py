@@ -6,10 +6,8 @@ from unittest.mock import patch, PropertyMock
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
 
-
 class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient"""
-
     @patch('client.get_json')
     def test_public_repos(self, mock_get_json):
         """Test GithubOrgClient.public_repos returns expected repos list"""
@@ -44,9 +42,8 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(
             "https://api.github.com/orgs/test_org/repos"
         )
-    # ============================================================
+
     # 7. test_has_license
-    # ============================================================
     @parameterized.expand([
         ({"license": {"key": "my_license"}}, "my_license", True),
         ({"license": {"key": "other_license"}}, "my_license", False),
@@ -55,7 +52,6 @@ class TestGithubOrgClient(unittest.TestCase):
         """Test has_license"""
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
-
 
     @patch('client.GithubOrgClient.repos', new_callable=PropertyMock)
     def test_public_repos(self, mock_repos):
@@ -103,19 +99,15 @@ class TestGithubOrgClient(unittest.TestCase):
         # Assert that the mock was accessed exactly once
         mock_repos.assert_called_once()
 
-# ============================================================
 # 8. Integration Tests
-# ============================================================
 @parameterized_class(("repos_payload", "expected_repos", "apache2_repos"), TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient"""
-
     @classmethod
     def setUpClass(cls):
         """Mock requests.get at the class level"""
         cls.get_patcher = patch("requests.get")
         mock_get = cls.get_patcher.start()
-
         # Simulate sequential .json() calls
         mock_get.return_value.json.side_effect = [
             cls.org_payload,     # response for org()
