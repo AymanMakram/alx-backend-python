@@ -65,12 +65,18 @@ class TestGithubOrgClient(unittest.TestCase):
 # ============================================================
 # 8. Integration Tests
 # ============================================================
-@parameterized_class(
-    ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
-    [
-        (org_payload, repos_payload, expected_repos, apache2_repos),
-    ],
-)
+URL_FIXTURES = {
+    "https://api.github.com/orgs/google": org_payload,
+    "https://api.github.com/orgs/google/repos": repos_payload,
+}
+
+@parameterized_class([
+    {
+        "org_name": "google",
+        "expected": expected_repos,
+        "apache2_expected": apache2_repos
+    }
+])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient"""
 

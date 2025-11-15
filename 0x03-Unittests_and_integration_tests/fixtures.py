@@ -948,20 +948,3 @@ TEST_PAYLOAD = [
     ['dagger', 'kratu', 'traceur-compiler', 'firmata.py'],
   )
 ]
-org_payload = {
-    "login": "google",
-    "id": 1,
-    "node_id": "MDQ6VXNlcjE=",
-    "url": "https://api.github.com/orgs/google",
-}
-
-repos_payload = [
-    {"id": 1, "name": "repo1", "private": False},
-    {"id": 2, "name": "repo2", "private": False},
-]
-
-expected_repos = ["repo1", "repo2"]
-
-apache2_repos = [
-    {"id": 3, "name": "apache2", "private": False},
-]
