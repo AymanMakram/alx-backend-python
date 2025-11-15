@@ -49,6 +49,22 @@ class TestGithubOrgClient(unittest.TestCase):
             "https://api.github.com/orgs/test_org/repos"
         )
 
+class TestGithubOrgClient(unittest.TestCase):
+    """Tests for GithubOrgClient"""
+
+    def test_has_license(self):
+        """Test GithubOrgClient.has_license static method"""
+        test_cases = [
+            ({"license": {"key": "my_license"}}, "my_license", True),
+            ({"license": {"key": "other_license"}}, "my_license", False),
+        ]
+
+        for repo, license_key, expected in test_cases:
+            with self.subTest(repo=repo, license_key=license_key):
+                result = GithubOrgClient.has_license(repo, license_key)
+                self.assertEqual(result, expected)
+
+
 
 if __name__ == "__main__":
     unittest.main()
