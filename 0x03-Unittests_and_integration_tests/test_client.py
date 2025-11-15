@@ -48,15 +48,11 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(
             "https://api.github.com/orgs/test_org/repos"
         )
-
-class TestGithubOrgClient(unittest.TestCase):
-    """Tests for GithubOrgClient"""
-
     def test_has_license(self):
         """Test GithubOrgClient.has_license static method"""
         test_cases = [
-            ({"license": {"key": "my_license"}}, "my_license", True),
-            ({"license": {"key": "other_license"}}, "my_license", False),
+          ({"license": {"key": "my_license"}}, "my_license", True),
+          ({"license": {"key": "other_license"}}, "my_license", False),
         ]
 
         for repo, license_key, expected in test_cases:
