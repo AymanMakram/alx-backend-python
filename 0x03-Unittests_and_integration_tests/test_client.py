@@ -11,7 +11,7 @@ import fixtures
 class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for GithubOrgClient"""
 
-    @parameterized(["google", "abc"])
+    @parameterized.expand(["google", "abc"])
     @patch("client.get_json")
     def test_org(self, org, mock_get_json):
         """Test org method"""
@@ -56,7 +56,7 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertEqual(result, fixtures.apache2_repos)
             mock_url.assert_called_once()
 
-    @parameterized([
+    @parameterized.expand([
         ({"license": {"key": "my_license"}}, "my_license", True),
         ({"license": {"key": "other"}}, "my_license", False),
     ])
@@ -79,7 +79,7 @@ class TestGithubOrgClient(unittest.TestCase):
     }
 ])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
-    """Integration tests for GithubOrgClient using fixtures"""
+    """Integration tests for GithubOrgClient"""
 
     @classmethod
     def setUpClass(cls):
@@ -87,18 +87,15 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.get_patcher = patch("requests.get")
         mock_get = cls.get_patcher.start()
 
-        def get_json_side_effect(url):
+        def side_effect(url):
             mock_response = MagicMock()
-
             if url.endswith("google"):
                 mock_response.json.return_value = cls.org_payload
-
             elif url.endswith("google/repos"):
                 mock_response.json.return_value = cls.repos_payload
-
             return mock_response
 
-        mock_get.side_effect = get_json_side_effect
+        mock_get.side_effect = side_effect
 
     @classmethod
     def tearDownClass(cls):
