@@ -132,31 +132,23 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     @patch('client.GithubOrgClient.org', new_callable=PropertyMock)
     def test_public_repos(self, org_name, org_payload, mock_org):
         """Tests GithubOrgClient.public_repos returns the expected repos."""
-        
         # Extract the expected repository list from the fixture
         expected_repos = TEST_PAYLOAD[0][2]
-        
         # 1. Mock the `org` property to return the organization payload
         #    which contains the repos_url.
         mock_org.return_value = org_payload
-
         # 2. Mock the `_public_repos_payload` method to return the list of
         #    repositories (the mock JSON response)
         with patch('client.GithubOrgClient._public_repos_payload',
                    new_callable=PropertyMock) as mock_payload:
-            
             # The payload of repos is the second element in the fixture tuple
             mock_payload.return_value = TEST_PAYLOAD[0][1]
-
             # Initialize the client with the org_name from parameterized input
             client = GithubOrgClient(org_name)
-            
             # Call the method under test
             result = client.public_repos()
-
             # Assert that the result matches the expected list of repository names
             self.assertEqual(result, expected_repos)
-            
             # Optionally, assert that `org` and `_public_repos_payload` were called
             mock_org.assert_called_once()
             mock_payload.assert_called_once()
@@ -169,30 +161,22 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         org_payload = TEST_PAYLOAD[0][0]
         # Expected repos with the 'apache-2.0' license
         expected_repos_with_license = TEST_PAYLOAD[0][3]
-        
         # Mock the `org` property
         mock_org.return_value = org_payload
-
         # Mock the `_public_repos_payload` method to return the list of repositories
         with patch('client.GithubOrgClient._public_repos_payload',
                    new_callable=PropertyMock) as mock_payload:
-            
             # The payload of repos is the second element in the fixture tuple
             mock_payload.return_value = TEST_PAYLOAD[0][1]
-
             # Initialize the client
             client = GithubOrgClient("google")
-
             # Call the method under test with the license filter
             result = client.public_repos(license="apache-2.0")
-
             # Assert that the result matches the expected list of repository names with the specific license
             self.assertEqual(result, expected_repos_with_license)
-            
             # Assert that mocks were called
             mock_org.assert_called_once()
             mock_payload.assert_called_once()
-
 
 if __name__ == "__main__":
     unittest.main()
