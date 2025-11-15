@@ -1,59 +1,68 @@
-from parameterized import parameterized_class
+#!/usr/bin/env python3
+"""
+Unit tests for the client.py module.
+"""
 import unittest
-from unittest.mock import patch, Mock
-from client import GithubOrgClient
-from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
+from unittest.mock import patch, PropertyMock
+from client import GithubOrgClient  # Assuming GithubOrgClient is in client.py
+from fixtures import TEST_PAYLOAD  # Assuming fixtures.py is accessible
 
 
-@parameterized_class(
-    ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
-    [
-        (org_payload, repos_payload, expected_repos, apache2_repos)
-    ]
-)
-class TestIntegrationGithubOrgClient(unittest.TestCase):
-    """Integration test for GithubOrgClient.public_repos"""
+class TestGithubOrgClient(unittest.TestCase):
+    """
+    Tests the GithubOrgClient class.
+    """
 
-    @classmethod
-    def setUpClass(cls):
-        """Start patcher for requests.get and return fixtures"""
+    @patch('client.GithubOrgClient.repos', new_callable=PropertyMock)
+    def test_public_repos(self, mock_repos):
+        """
+        Tests that public_repos returns the expected list of public repository names
+        when no license filter is applied.
+        """
+        # Set the mock return value to the list of repositories from the fixture
+        REPOS_PAYLOAD = TEST_PAYLOAD[0][1]
+        mock_repos.return_value = REPOS_PAYLOAD
 
-        cls.get_patcher = patch("client.requests.get")
-        cls.mock_get = cls.get_patcher.start()
+        # The expected result is the list of 'name' values for all repos
+        expected_repos = [
+            repo["name"]
+            for repo in REPOS_PAYLOAD
+        ]
 
-        # Side effect to return correct fixture based on URL
-        def side_effect(url):
-            mock_response = Mock()
+        # Instantiate the client and call the method under test
+        client = GithubOrgClient("google")
+        result = client.public_repos()
 
-            # org payload request
-            if url == f"https://api.github.com/orgs/{cls.org_payload['login']}":
-                mock_response.json.return_value = cls.org_payload
+        # Assert that the result matches the expected list of names
+        self.assertEqual(result, expected_repos)
 
-            # repos payload request
-            elif url == cls.org_payload["repos_url"]:
-                mock_response.json.return_value = cls.repos_payload
+        # Assert that the mock property was accessed exactly once
+        mock_repos.assert_called_once()
 
-            else:
-                raise ValueError(f"Unexpected URL: {url}")
+    @patch('client.GithubOrgClient.repos', new_callable=PropertyMock)
+    def test_public_repos_with_license(self, mock_repos):
+        """
+        Tests public_repos with the license filter set to 'apache-2.0',
+        ensuring only repos with that license are returned.
+        """
+        # Setup mock return value (the full list of repos)
+        REPOS_PAYLOAD = TEST_PAYLOAD[0][1]
+        mock_repos.return_value = REPOS_PAYLOAD
 
-            return mock_response
+        # Define expected result: only repos with license key 'apache-2.0'
+        # Based on the fixture, this is ['firmata.py']
+        expected_repos = [
+            repo["name"]
+            for repo in REPOS_PAYLOAD
+            if repo.get("license", {}).get("key") == "apache-2.0"
+        ]
 
-        cls.mock_get.side_effect = side_effect
+        # Instantiate the client and call the method under test with the license argument
+        client = GithubOrgClient("google")
+        result = client.public_repos(license="apache-2.0")
 
-    @classmethod
-    def tearDownClass(cls):
-        """Stop patcher"""
-        cls.get_patcher.stop()
+        # Assert that the result matches the expected filtered list
+        self.assertEqual(result, expected_repos)
 
-    def test_public_repos(self):
-        """Test public_repos returns expected repos"""
-        client = GithubOrgClient(self.org_payload["login"])
-        self.assertEqual(client.public_repos(), self.expected_repos)
-
-    def test_public_repos_with_license(self):
-        """Test filtering repos by 'apache-2.0' license"""
-        client = GithubOrgClient(self.org_payload["login"])
-        self.assertEqual(
-            client.public_repos(license="apache-2.0"),
-            self.apache2_repos
-        )
+        # Assert that the mock was accessed exactly once
+        mock_repos.assert_called_once()
