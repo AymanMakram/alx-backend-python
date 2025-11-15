@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#tests for client module
+"""Unit tests for GithubOrgClient in client.py"""
 import unittest
 from unittest.mock import patch, Mock, MagicMock, PropertyMock
 from parameterized import parameterized, parameterized_class
@@ -8,10 +8,8 @@ from requests import HTTPError
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
 
-
 class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for GithubOrgClient class"""
-
     @parameterized.expand(
             [
                 ("google", {"login": "google"}), ("abc", {"login": "abc"})
@@ -124,3 +122,6 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             GithubOrgClient("google").public_repos(license="apache-2.0"),
             self.apache2_repos,
         )
+
+if __name__ == "__main__":
+    unittest.main()
