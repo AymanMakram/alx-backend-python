@@ -14,7 +14,11 @@ from fixtures import TEST_PAYLOAD
 class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for GithubOrgClient class"""
 
-    @parameterized.expand([("google", {"login": "google"}), ("abc", {"login": "abc"})])
+    @parameterized.expand(
+            [
+                ("google", {"login": "google"}), ("abc", {"login": "abc"})
+                ]
+            )
     @patch("client.get_json")
     def test_org(self, org: str, resp: Dict, mocked_fn: MagicMock) -> None:
         """Test output for GithubOrgClient method org"""
