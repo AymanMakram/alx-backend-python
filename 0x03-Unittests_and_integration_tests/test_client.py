@@ -4,7 +4,7 @@ import unittest
 from parameterized import parameterized, parameterized_class
 from unittest.mock import patch, PropertyMock
 from client import GithubOrgClient
-from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -65,18 +65,7 @@ class TestGithubOrgClient(unittest.TestCase):
 # ============================================================
 # 8. Integration Tests
 # ============================================================
-URL_FIXTURES = {
-    "https://api.github.com/orgs/google": org_payload,
-    "https://api.github.com/orgs/google/repos": repos_payload,
-}
-
-@parameterized_class([
-    {
-        "org_name": "google",
-        "expected": expected_repos,
-        "apache2_expected": apache2_repos
-    }
-])
+@parameterized_class(("org_payload", "repos_payload", "expected_repos", "apache2_repos"), TEST_PAYLOAD)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient"""
 
