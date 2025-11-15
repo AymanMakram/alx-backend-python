@@ -1,0 +1,89 @@
+# ---------------------------------------
+# Python & Django Ignore Rules
+# ---------------------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.env/
+.venv/
+ENV/
+env/
+
+# Django files
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+
+# Local settings
+local_settings.py
+.env
+*.env
+
+# Django migrations (optional: keep if required by ALX instructions)
+# Uncomment below to ignore migration files
+# */migrations/*.py
+# */migrations/*.pyc
+
+# ---------------------------------------
+# IDE / Editor files
+# ---------------------------------------
+
+# VSCode
+.vscode/
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+
+# ---------------------------------------
+# OS files
+# ---------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# ---------------------------------------
+# Project Specific
+# ---------------------------------------
+
+# Logs
+logs/
+*.log
+
+# Compiled
+build/
+dist/
+*.egg-info/
+
+# Coverage & Testing
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.cache/
+nosetests.xml
+coverage.xml
+test_output/
+
+# ---------------------------------------
+# Docker (if used)
+# ---------------------------------------
+docker-compose.override.yml
+
+# ---------------------------------------
+# End of File
+# ---------------------------------------
