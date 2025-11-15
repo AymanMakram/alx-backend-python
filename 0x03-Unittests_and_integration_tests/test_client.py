@@ -27,7 +27,9 @@ class TestGithubOrgClient(unittest.TestCase):
             "_public_repos_url",
             new_callable=PropertyMock,
         ) as mock_repo_url:
-            mock_repo_url.return_value = "https://api.github.com/orgs/test_org/repos"
+            mock_repo_url.return_value = (
+                "https://api.github.com/orgs/test_org/repos"
+            )
 
             # Test without license filter
             expected_repos = ["repo1", "repo2", "repo3"]
@@ -35,13 +37,17 @@ class TestGithubOrgClient(unittest.TestCase):
 
             # Test with license filter
             expected_mit_repos = ["repo1", "repo3"]
-            self.assertEqual(client.public_repos(license="mit"), expected_mit_repos)
+            self.assertEqual(
+                client.public_repos(license="mit"), expected_mit_repos
+            )
 
             # Ensure the mocked property was accessed once
             mock_repo_url.assert_called_once()
 
         # Ensure get_json was called once with the mocked URL
-        mock_get_json.assert_called_once_with("https://api.github.com/orgs/test_org/repos")
+        mock_get_json.assert_called_once_with(
+            "https://api.github.com/orgs/test_org/repos"
+        )
 
 
 if __name__ == "__main__":
