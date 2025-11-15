@@ -99,7 +99,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             client.public_repos("apache-2.0"),
             self.apache2_repos
         )
-        
+
     @patch('client.GithubOrgClient.repos', new_callable=PropertyMock)
     def test_public_repos(self, mock_repos):
         """
@@ -126,32 +126,72 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         mock_repos.assert_called_once()
 
 
-    @patch('client.GithubOrgClient.repos', new_callable=PropertyMock)
-    def test_public_repos_with_license(self, mock_repos):
+    @parameterized.expand([
+        ("google", {"repos_url": "[https://api.github.com/orgs/google/repos](https://api.github.com/orgs/google/repos)"}),
+    ])
+    @patch('client.GithubOrgClient.org', new_callable=PropertyMock)
+    def test_public_repos(self, org_name, org_payload, mock_org):
+        """Tests GithubOrgClient.public_repos returns the expected repos."""
+        
+        # Extract the expected repository list from the fixture
+        expected_repos = TEST_PAYLOAD[0][2]
+        
+        # 1. Mock the `org` property to return the organization payload
+        #    which contains the repos_url.
+        mock_org.return_value = org_payload
+
+        # 2. Mock the `_public_repos_payload` method to return the list of
+        #    repositories (the mock JSON response)
+        with patch('client.GithubOrgClient._public_repos_payload',
+                   new_callable=PropertyMock) as mock_payload:
+            
+            # The payload of repos is the second element in the fixture tuple
+            mock_payload.return_value = TEST_PAYLOAD[0][1]
+
+            # Initialize the client with the org_name from parameterized input
+            client = GithubOrgClient(org_name)
+            
+            # Call the method under test
+            result = client.public_repos()
+
+            # Assert that the result matches the expected list of repository names
+            self.assertEqual(result, expected_repos)
+            
+            # Optionally, assert that `org` and `_public_repos_payload` were called
+            mock_org.assert_called_once()
+            mock_payload.assert_called_once()
+
+    @patch('client.GithubOrgClient.org', new_callable=PropertyMock)
+    def test_public_repos_with_license(self, mock_org):
         """
-        Tests public_repos with the license filter set to 'apache-2.0',
-        ensuring only repos with that license are returned.
+        Tests GithubOrgClient.public_repos with a license filter.
         """
-        # Setup mock return value (the full list of repos)
-        REPOS_PAYLOAD = TEST_PAYLOAD[0][1]
-        mock_repos.return_value = REPOS_PAYLOAD
+        org_payload = TEST_PAYLOAD[0][0]
+        # Expected repos with the 'apache-2.0' license
+        expected_repos_with_license = TEST_PAYLOAD[0][3]
+        
+        # Mock the `org` property
+        mock_org.return_value = org_payload
 
-        # Define expected result: only repos with license key 'apache-2.0'
-        # Based on the fixture, this is ['firmata.py']
-        expected_repos = [
-            repo["name"] for repo in REPOS_PAYLOAD
-            if repo.get("license", {}).get("key") == "apache-2.0"
-        ]
+        # Mock the `_public_repos_payload` method to return the list of repositories
+        with patch('client.GithubOrgClient._public_repos_payload',
+                   new_callable=PropertyMock) as mock_payload:
+            
+            # The payload of repos is the second element in the fixture tuple
+            mock_payload.return_value = TEST_PAYLOAD[0][1]
 
-        # Instantiate the client and call the method under test with the license argument
-        client = GithubOrgClient("google")
-        result = client.public_repos(license="apache-2.0")
+            # Initialize the client
+            client = GithubOrgClient("google")
 
-        # Assert that the result matches the expected filtered list
-        self.assertEqual(result, expected_repos)
+            # Call the method under test with the license filter
+            result = client.public_repos(license="apache-2.0")
 
-        # Assert that the mock was accessed exactly once
-        mock_repos.assert_called_once()
+            # Assert that the result matches the expected list of repository names with the specific license
+            self.assertEqual(result, expected_repos_with_license)
+            
+            # Assert that mocks were called
+            mock_org.assert_called_once()
+            mock_payload.assert_called_once()
 
 
 if __name__ == "__main__":
