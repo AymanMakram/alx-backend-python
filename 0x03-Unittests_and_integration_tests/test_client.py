@@ -8,6 +8,7 @@ from requests import HTTPError
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
 
+
 class TestGithubOrgClient(unittest.TestCase):
     """Unit tests for GithubOrgClient class"""
     @parameterized.expand(
@@ -21,12 +22,14 @@ class TestGithubOrgClient(unittest.TestCase):
         mocked_fn.return_value = MagicMock(return_value=resp)
         gh_client = GithubOrgClient(org)
         self.assertEqual(gh_client.org(), resp)
-        mocked_fn.assert_called_once_with(f"https://api.github.com/orgs/{org}")
-
+        mocked_fn.assert_called_once_with(
+            f"https://api.github.com/orgs/{org}"
+        )
 
     def test_public_repos_url(self) -> None:
         """Test GithubOrgClient property _public_repos_url"""
-        with patch("client.GithubOrgClient.org", new_callable=PropertyMock) as mock_org:
+        with patch("client.GithubOrgClient.org",
+                   new_callable=PropertyMock) as mock_org:
             mock_org.return_value = {
                 "repos_url": "https://api.github.com/users/google/repos",
             }
@@ -34,7 +37,6 @@ class TestGithubOrgClient(unittest.TestCase):
                 GithubOrgClient("google")._public_repos_url,
                 "https://api.github.com/users/google/repos",
             )
-
 
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json: MagicMock) -> None:
@@ -65,15 +67,12 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_public_repos_url.assert_called_once()
         mock_get_json.assert_called_once()
 
-
     @parameterized.expand(
         [
             ({"license": {"key": "my_license"}}, "my_license", True),
             ({"license": {"key": "other_license"}}, "my_license", False),
         ]
     )
-
-
     def test_has_license(self, repo: Dict, key: str, expected: bool) -> None:
         """Test output for GithubOrgClient method has_license"""
         self.assertEqual(GithubOrgClient("google").has_license(repo, key), expected)
@@ -100,7 +99,6 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             "https://api.github.com/orgs/google/repos": cls.repos_payload,
         }
 
-
         def get_payload(url):
             """method to get url payload"""
             if url in route_payload:
@@ -110,17 +108,14 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.get_patcher = patch("requests.get", side_effect=get_payload)
         cls.get_patcher.start()
 
-
     @classmethod
     def tearDownClass(cls) -> None:
         """method called after tests in an individual class have run"""
         cls.get_patcher.stop()
 
-
     def test_public_repos(self) -> None:
         """integration test for GithubOrgClient.public_repos without args"""
         self.assertEqual(GithubOrgClient("google").public_repos(), self.expected_repos)
-
 
     def test_public_repos_with_license(self) -> None:
         """integration test for GithubOrgClient.public_repos with args"""
