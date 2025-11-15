@@ -21,7 +21,9 @@ class TestGithubOrgClient(unittest.TestCase):
         """Test output for GithubOrgClient method org"""
         mocked_fn.return_value = MagicMock(return_value=resp)
         gh_client = GithubOrgClient(org)
-        self.assertEqual(gh_client.org(), resp)
+        self.assertEqual(
+            gh_client.org(), resp
+            )
         mocked_fn.assert_called_once_with(
             f"https://api.github.com/orgs/{org}"
         )
@@ -54,7 +56,8 @@ class TestGithubOrgClient(unittest.TestCase):
         }
         mock_get_json.return_value = test_payload["repos"]
         with patch(
-            "client.GithubOrgClient._public_repos_url", new_callable=PropertyMock
+            "client.GithubOrgClient._public_repos_url", 
+            new_callable=PropertyMock
         ) as mock_public_repos_url:
             mock_public_repos_url.return_value = test_payload["repos_url"]
             self.assertEqual(
@@ -74,8 +77,10 @@ class TestGithubOrgClient(unittest.TestCase):
         ]
     )
     def test_has_license(self, repo: Dict, key: str, expected: bool) -> None:
-        """Test output for GithubOrgClient method has_license"""
-        self.assertEqual(GithubOrgClient("google").has_license(repo, key), expected)
+        """Test output for GithubOrgClient has_license"""
+        self.assertEqual(
+            GithubOrgClient("google").has_license(repo, key), expected
+            )
 
 
 @parameterized_class(
@@ -110,12 +115,14 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        """method called after tests in an individual class have run"""
+        """method called in an individual class have run"""
         cls.get_patcher.stop()
 
     def test_public_repos(self) -> None:
         """integration test for GithubOrgClient.public_repos without args"""
-        self.assertEqual(GithubOrgClient("google").public_repos(), self.expected_repos)
+        self.assertEqual(
+            GithubOrgClient("google").public_repos(), self.expected_repos
+            )
 
     def test_public_repos_with_license(self) -> None:
         """integration test for GithubOrgClient.public_repos with args"""
