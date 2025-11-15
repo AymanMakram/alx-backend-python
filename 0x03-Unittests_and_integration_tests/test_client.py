@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Unit tests for GithubOrgClient in client.py"""
 import unittest
+from parameterized import parameterized, parameterized_class
 from unittest.mock import patch, PropertyMock
 from client import GithubOrgClient
 
@@ -48,17 +49,17 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(
             "https://api.github.com/orgs/test_org/repos"
         )
-    def test_has_license(self):
-        """Test GithubOrgClient.has_license static method"""
-        test_cases = [
-            ({"license": {"key": "my_license"}}, "my_license", True),
-            ({"license": {"key": "other_license"}}, "my_license", False),
-        ]
-
-        for repo, license_key, expected in test_cases:
-            with self.subTest(repo=repo, license_key=license_key):
-                result = GithubOrgClient.has_license(repo, license_key)
-                self.assertEqual(result, expected)
+    # ============================================================
+    # 7. test_has_license
+    # ============================================================
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+    ])
+    def test_has_license(self, repo, license_key, expected):
+        """Test has_license"""
+        result = GithubOrgClient.has_license(repo, license_key)
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":
