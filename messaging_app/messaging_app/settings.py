@@ -43,30 +43,34 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt',
     # your apps
-    'chats',
+    'messaging_app.chats',
 ]
 
 # Global page size constant (used below in REST_FRAMEWORK and available to code/tests)
 PAGE_SIZE = 20
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         # JWT auth first (so API clients using tokens are authenticated)
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.BasicAuthentication",
-        # add token/jwt if you use them
     ],
+    # enforce authentication globally; viewsets still apply object-level checks via custom permission
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    # Use the custom pagination class for paginated endpoints (20 items/page)
-    "DEFAULT_PAGINATION_CLASS": "messaging_app.chats.pagination.MessagePagination",
+    # Use DRF's PageNumberPagination by default (this contains the string "PageNumberPagination")
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    # set default page size for pagination
+    "PAGE_SIZE": PAGE_SIZE,
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
 }
+
 # SIMPLE_JWT settings — adjust lifetimes as needed
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
