@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     # your apps
     'chats',
 ]
+
+# Global page size constant (used below in REST_FRAMEWORK and available to code/tests)
+PAGE_SIZE = 20
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         # JWT auth first (so API clients using tokens are authenticated)
