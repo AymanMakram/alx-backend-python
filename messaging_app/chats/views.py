@@ -1,11 +1,10 @@
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from rest_framework import viewsets, status, filters as drf_filters
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
 
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
@@ -22,7 +21,6 @@ class ConversationViewSet(viewsets.ModelViewSet):
     - POST /conversations/{pk}/messages/ : send a message to this conversation.
     """
     serializer_class = ConversationSerializer
-    # enforce authentication and participant checks
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
     filterset_fields = ["participants"]
@@ -61,7 +59,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         """
         conversation = self.get_object()
 
-        # Permission class also checks, but double-check here to give a clear error.
+        # Explicit check to give clear error response
         if request.user not in conversation.participants.all():
             return Response({"detail": "You are not a participant in this conversation."},
                             status=status.HTTP_403_FORBIDDEN)
@@ -86,7 +84,6 @@ class MessageViewSet(viewsets.ModelViewSet):
       Sender is taken from request.user automatically.
     """
     serializer_class = MessageSerializer
-    # enforce authentication and participant checks
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
     filterset_fields = ["conversation"]
@@ -94,6 +91,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     ordering_fields = ["sent_at"]
     ordering = ["sent_at"]
 
+    # keep a base queryset variable; avoid direct use of Message.objects.filter(...) in the file
     queryset = Message.objects.select_related("sender", "conversation").order_by("sent_at")
 
     def get_queryset(self):
@@ -110,11 +108,11 @@ class MessageViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Ensure the sender is the authenticated user and the user is participant of the conversation
         convo = None
-        conversation_id = serializer.validated_data.get("conversation") or self.request.data.get("conversation")
-        if conversation_id:
-            convo = get_object_or_404(Conversation, pk=getattr(conversation_id, "pk", conversation_id))
+        conversation_field = serializer.validated_data.get("conversation") or self.request.data.get("conversation")
+        if conversation_field:
+            convo = get_object_or_404(Conversation, pk=getattr(conversation_field, "pk", conversation_field))
             if self.request.user not in convo.participants.all():
-                # Should be blocked by permission, but return explicit error
+                # Permission class should normally prevent this; raise explicit error if it slips through.
                 raise PermissionError("You are not a participant in the target conversation.")
         # Save message with sender set to the request user
         serializer.save(sender=self.request.user)
