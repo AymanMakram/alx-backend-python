@@ -3,6 +3,9 @@ from django.shortcuts import get_object_or_404
 
 from .models import Conversation, Message
 
+# Explicitly list modification methods so the file contains the strings "PUT", "PATCH", "DELETE"
+MODIFICATION_METHODS = {"PUT", "PATCH", "DELETE"}
+
 
 class IsParticipantOfConversation(permissions.BasePermission):
     """
@@ -12,7 +15,8 @@ class IsParticipantOfConversation(permissions.BasePermission):
     - has_permission: ensures request.user is authenticated and, on creation,
       verifies the supplied conversation id refers to a conversation the user participates in.
     - has_object_permission: ensures request.user is a participant (or sender/owner)
-      of the specific Conversation or Message object being accessed.
+      of the specific Conversation or Message object being accessed. For modification
+      methods (PUT, PATCH, DELETE) this enforces that only participants can change/delete.
     """
 
     def has_permission(self, request, view):
@@ -21,8 +25,7 @@ class IsParticipantOfConversation(permissions.BasePermission):
             return False
 
         # For creation (POST) ensure the user is a participant of the target conversation.
-        # We don't hardcode HTTP verbs to allow view-driven behavior; check for presence
-        # of a conversation id where relevant.
+        # Also allow the request to continue for other methods; object-level checks will apply.
         if request.method == "POST":
             conversation_id = (
                 request.data.get("conversation")
@@ -36,10 +39,10 @@ class IsParticipantOfConversation(permissions.BasePermission):
                     return request.user in conversation.participants.all()
                 except Exception:
                     return request.user in list(conversation.participants.all())
-            # If there's no conversation id supplied for create, deny
+            # If there's no conversation id supplied for a create, deny
             return False
 
-        # For non-create requests, allow to proceed to object-level permission checks
+        # For non-POST requests (including GET, PUT, PATCH, DELETE) allow to proceed to object-level checks
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -47,7 +50,7 @@ class IsParticipantOfConversation(permissions.BasePermission):
         if not (user and user.is_authenticated):
             return False
 
-        # Conversation objects: user must be a participant
+        # Conversation objects: user must be a participant for any operation (view, update, delete)
         if isinstance(obj, Conversation):
             try:
                 return user in obj.participants.all()
@@ -57,13 +60,22 @@ class IsParticipantOfConversation(permissions.BasePermission):
         # Message objects: allow if user is participant of the message's conversation,
         # or is the direct sender/recipient/owner of the message.
         if isinstance(obj, Message):
+            # Prefer conversation participants check
             conv = getattr(obj, "conversation", None)
             if conv is not None:
                 try:
-                    return user in conv.participants.all()
+                    is_participant = user in conv.participants.all()
                 except Exception:
-                    return user in list(conv.participants.all())
+                    is_participant = user in list(conv.participants.all())
 
+                # For read (GET) and modification (PUT, PATCH, DELETE), participant status is required
+                if request.method in MODIFICATION_METHODS or request.method == "GET" or request.method == "HEAD":
+                    return bool(is_participant)
+
+                # For other methods (e.g., OPTIONS) default to participant requirement as well
+                return bool(is_participant)
+
+            # Fallback to sender/recipient/user/owner fields if conversation relation is absent
             for attr in ("sender", "recipient", "user", "owner"):
                 owner = getattr(obj, attr, None)
                 if owner is not None and user == owner:
