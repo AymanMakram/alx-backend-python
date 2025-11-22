@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt',
     # your apps
-    'messaging_app.chats',
+    'chats',
 ]
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [

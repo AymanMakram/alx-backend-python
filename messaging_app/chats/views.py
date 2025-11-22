@@ -4,9 +4,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
+from .permissions import IsParticipantOfConversation
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -19,7 +22,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
     - POST /conversations/{pk}/messages/ : send a message to this conversation.
     """
     serializer_class = ConversationSerializer
-    permission_classes = [IsAuthenticated]
+    # enforce authentication and participant checks
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
     filterset_fields = ["participants"]
     search_fields = ["participants__username", "participants__email"]
@@ -57,7 +61,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         """
         conversation = self.get_object()
 
-        # Ensure request.user is a participant
+        # Permission class also checks, but double-check here to give a clear error.
         if request.user not in conversation.participants.all():
             return Response({"detail": "You are not a participant in this conversation."},
                             status=status.HTTP_403_FORBIDDEN)
@@ -67,7 +71,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
         serializer = MessageSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        message = serializer.save()
+        message = serializer.save(sender=request.user)
         return Response(MessageSerializer(message, context={"request": request}).data,
                         status=status.HTTP_201_CREATED)
 
@@ -82,7 +86,8 @@ class MessageViewSet(viewsets.ModelViewSet):
       Sender is taken from request.user automatically.
     """
     serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated]
+    # enforce authentication and participant checks
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
     filterset_fields = ["conversation"]
     search_fields = ["message_body"]
@@ -103,5 +108,13 @@ class MessageViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        # MessageSerializer.create expects request in context and will set sender from request.user
-        serializer.save()
+        # Ensure the sender is the authenticated user and the user is participant of the conversation
+        convo = None
+        conversation_id = serializer.validated_data.get("conversation") or self.request.data.get("conversation")
+        if conversation_id:
+            convo = get_object_or_404(Conversation, pk=getattr(conversation_id, "pk", conversation_id))
+            if self.request.user not in convo.participants.all():
+                # Should be blocked by permission, but return explicit error
+                raise PermissionError("You are not a participant in the target conversation.")
+        # Save message with sender set to the request user
+        serializer.save(sender=self.request.user)
