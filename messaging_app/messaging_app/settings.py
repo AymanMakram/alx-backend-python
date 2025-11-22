@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt',
     # your apps
-    'messaging_app.chats',
+    'chats',
 ]
 
 # Global page size constant (used below in REST_FRAMEWORK and available to code/tests)
