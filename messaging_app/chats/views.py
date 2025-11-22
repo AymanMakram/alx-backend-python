@@ -9,17 +9,12 @@ from django.shortcuts import get_object_or_404
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
+from .filters import MessageFilter
+from .pagination import MessagePagination
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for listing, retrieving and creating Conversations.
-
-    - list: returns conversations the authenticated user participates in.
-    - create: create a conversation (participant ids via 'participant_ids' in serializer).
-    - retrieve: retrieve a single conversation (includes participants and ordered messages).
-    - POST /conversations/{pk}/messages/ : send a message to this conversation.
-    """
+    # ... existing ConversationViewSet unchanged ...
     serializer_class = ConversationSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
@@ -38,35 +33,22 @@ class ConversationViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        # Only return conversations the current user participates in
         user = self.request.user
         return self.queryset.filter(participants=user).distinct()
 
     def perform_create(self, serializer):
-        # Create conversation, ensure the requesting user is a participant
         conversation = serializer.save()
         if self.request.user not in conversation.participants.all():
             conversation.participants.add(self.request.user)
 
     @action(detail=True, methods=["post"], url_path="messages")
     def send_message(self, request, pk=None):
-        """
-        Send a message to this conversation. The request body should include:
-          - message_body (string)
-
-        The conversation id is attached automatically from the URL and the sender is
-        set from request.user.
-        """
         conversation = self.get_object()
-
-        # Explicit check to give clear error response
         if request.user not in conversation.participants.all():
             return Response({"detail": "You are not a participant in this conversation."},
                             status=status.HTTP_403_FORBIDDEN)
-
         data = request.data.copy()
-        data["conversation"] = conversation.pk  # MessageSerializer expects conversation PK on write
-
+        data["conversation"] = conversation.pk
         serializer = MessageSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         message = serializer.save(sender=request.user)
@@ -79,19 +61,20 @@ class MessageViewSet(viewsets.ModelViewSet):
     ViewSet for listing and creating Messages.
 
     - list: lists messages in conversations the authenticated user participates in.
-      Supports filtering by conversation via ?conversation=<id>.
+      Supports filtering by conversation via ?conversation=<id> and other filters via MessageFilter.
     - create: send a message by providing 'conversation' (pk) and 'message_body'.
       Sender is taken from request.user automatically.
     """
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
+    filterset_class = MessageFilter
+    pagination_class = MessagePagination
     filterset_fields = ["conversation"]
     search_fields = ["message_body"]
     ordering_fields = ["sent_at"]
     ordering = ["sent_at"]
 
-    # keep a base queryset variable; avoid direct use of Message.objects.filter(...) in the file
     queryset = Message.objects.select_related("sender", "conversation").order_by("sent_at")
 
     def get_queryset(self):
@@ -106,13 +89,10 @@ class MessageViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        # Ensure the sender is the authenticated user and the user is participant of the conversation
         convo = None
         conversation_field = serializer.validated_data.get("conversation") or self.request.data.get("conversation")
         if conversation_field:
             convo = get_object_or_404(Conversation, pk=getattr(conversation_field, "pk", conversation_field))
             if self.request.user not in convo.participants.all():
-                # Permission class should normally prevent this; raise explicit error if it slips through.
                 raise PermissionError("You are not a participant in the target conversation.")
-        # Save message with sender set to the request user
         serializer.save(sender=self.request.user)
