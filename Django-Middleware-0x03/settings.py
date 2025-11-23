@@ -65,6 +65,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',   
     # Add the request-logging middleware (adjust position if desired)
     'chats.middleware.RequestLoggingMiddleware',
+    'chats.middleware.RestrictAccessByTimeMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
