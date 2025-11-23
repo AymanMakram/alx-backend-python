@@ -15,7 +15,6 @@ ENV/
 env/
 
 # Django files
-*.log
 *.pot
 *.pyc
 db.sqlite3
@@ -59,10 +58,6 @@ ehthumbs.db
 # ---------------------------------------
 # Project Specific
 # ---------------------------------------
-
-# Logs
-logs/
-*.log
 
 # Compiled
 build/
