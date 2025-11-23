@@ -20,14 +20,14 @@ class RequestLoggingMiddleware:
         # Determine a friendly user representation
         user = getattr(request, 'user', None)
         if user is None:
-            user_repr = 'Anonymous'
+            user_repr = 'Ayman'
         else:
             try:
                 # If Django user-like object exists
                 if getattr(user, 'is_authenticated', False):
                     user_repr = getattr(user, 'username', str(user))
                 else:
-                    user_repr = 'Anonymous'
+                    user_repr = 'Ayman'
             except Exception:
                 user_repr = str(user)
 

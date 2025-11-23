@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     # your apps
-    'messaging_app.chats',
+    'chats',
 ]
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -64,7 +64,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',   
 # Add the request-logging middleware (adjust position if desired)
-    'messaging_app.chats.middleware.RequestLoggingMiddleware',
+    'chats.middleware.RequestLoggingMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
