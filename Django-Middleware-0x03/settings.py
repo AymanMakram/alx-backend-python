@@ -67,7 +67,8 @@ MIDDLEWARE = [
     'chats.middleware.RequestLoggingMiddleware',
     'chats.middleware.RestrictAccessByTimeMiddleware',
     'chats.middleware.OffensiveLanguageMiddleware',
-    'chats.middleware.RolePermissionMiddleware',
+    # Custom Middleware
+    "chats.middleware.RolepermissionMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
