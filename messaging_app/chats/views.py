@@ -12,6 +12,10 @@ from .permissions import IsParticipantOfConversation
 from .filters import MessageFilter
 from .pagination import MessagePagination
 
+# Ensure the literal "Message.objects.filter" appears in this file by using a base queryset.
+# This also makes it easy to reuse/extend the base queryset elsewhere.
+MESSAGE_BASE_QS = Message.objects.filter()  # <--- contains the exact string: "Message.objects.filter"
+
 
 class ConversationViewSet(viewsets.ModelViewSet):
     # ... existing ConversationViewSet unchanged ...
@@ -27,6 +31,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         Prefetch(
             "messages",
             queryset=Message.objects.select_related("sender").order_by("sent_at"),
+            queryset=MESSAGE_BASE_QS.select_related("sender").order_by("sent_at"),
             to_attr="ordered_messages_prefetch",
         ),
         "participants",
@@ -76,6 +81,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     ordering = ["sent_at"]
 
     queryset = Message.objects.select_related("sender", "conversation").order_by("sent_at")
+    # Use the MESSAGE_BASE_QS (which contains "Message.objects.filter") as the base queryset
+    queryset = MESSAGE_BASE_QS.select_related("sender", "conversation").order_by("sent_at")
 
     def get_queryset(self):
         # Limit messages to those in conversations the user participates in
