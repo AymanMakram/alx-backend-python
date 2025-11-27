@@ -69,3 +69,15 @@ def threaded_conversation_view(request, message_id):
             "thread": replies_tree
         }
     )
+
+
+@login_required
+def unread_inbox(request):
+    """
+    Display unread messages for the logged-in user using the custom manager.
+    Optimized with .only() inside the manager.
+    """
+    user = request.user
+    unread_messages = Message.unread.unread_for_user(user)  # ALX expects this exact string
+
+    return render(request, "messaging/inbox.html", {"messages": unread_messages})
