@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
 from .models import Message
+from django.views.decorators.cache import cache_page
 
 @login_required
 def delete_user(request):
@@ -81,3 +82,20 @@ def unread_inbox(request):
     unread_messages = Message.unread.unread_for_user(user)  # ALX expects this exact string
 
     return render(request, "messaging/inbox.html", {"messages": unread_messages})
+
+
+# Cache this view for 60 seconds
+@cache_page(60)
+@login_required
+def conversation_messages(request, conversation_id):
+    """
+    Display all messages in a conversation, cached for 60 seconds.
+    """
+    # Optimized query using select_related and prefetch_related
+    messages = (
+        Message.objects.filter(parent_message_id=conversation_id)
+        .select_related('sender', 'receiver', 'parent_message')
+        .prefetch_related('replies')
+    )
+
+    return render(request, "messaging/conversation.html", {"messages": messages})
