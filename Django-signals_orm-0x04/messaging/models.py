@@ -17,8 +17,16 @@ class Message(models.Model):
         blank=True
     )
 
+    parent_message = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies'
+    )
+
     def __str__(self):
-        return f"{self.sender} → {self.receiver}: {self.content[:20]}"
+        return f"{self.sender} → {self.receiver}: {self.content[:25]}"
 
 
 class MessageHistory(models.Model):
@@ -31,3 +39,18 @@ class MessageHistory(models.Model):
 
     def __str__(self):
         return f"History for Message {self.message.id} at {self.edited_at}"
+
+
+
+    def get_all_replies(self):
+        """
+        Recursively fetch all replies to this message.
+        Returns a list (tree) of nested replies.
+        """
+        all_replies = []
+        for reply in self.replies.all():
+            all_replies.append({
+                "message": reply,
+                "children": reply.get_all_replies()
+            })
+        return all_replies
