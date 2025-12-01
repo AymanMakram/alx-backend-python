@@ -25,6 +25,18 @@ def save_old_message_content(sender, instance, **kwargs):
         )
         instance.edited = True
 
+@receiver(post_save, sender=Message)
+def create_notification_on_new_message(sender, instance, created, **kwargs):
+    """
+    Create a notification for the receiver when a new message is created.
+    """
+    if created:
+        Notification.objects.create(
+            user=instance.receiver,
+            message=instance,
+            content=f"New message from {instance.sender.username}"
+        )
+
 
 @receiver(post_delete, sender=User)
 def cleanup_user_data(sender, instance, **kwargs):
