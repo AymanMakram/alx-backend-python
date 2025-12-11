@@ -1,0 +1,3 @@
+#!/bin/bash
+kubectl apply -f blue_deployment.yaml
+kubectl rollout status deployment/messaging-blue
