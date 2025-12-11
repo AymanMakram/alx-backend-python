@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Task 4: Deploy blue and green versions, check logs
+
+echo "🚀 Applying blue deployment..."
+kubectl apply -f blue_deployment.yaml
+
+echo "🚀 Applying green deployment..."
+kubectl apply -f green_deployment.yaml
+
+echo "🔍 Checking pods..."
+kubectl get pods
+
+echo "📄 Checking logs of green deployment..."
+GREEN_POD=$(kubectl get pods -l version=green -o jsonpath="{.items[0].metadata.name}")
+kubectl logs $GREEN_POD
+
+echo "✅ Blue-Green Deployment applied successfully."
