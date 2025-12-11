@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "Scaling deployment to 3 replicas..."
+kubectl scale deployment messaging-app --replicas=3
+
+echo "Listing pods..."
+kubectl get pods
+
+echo "Running load test with wrk..."
+wrk http://$(minikube ip):8000/
+
+echo "Monitoring resource usage..."
+kubectl top pods
