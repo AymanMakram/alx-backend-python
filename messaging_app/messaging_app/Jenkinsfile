@@ -1,83 +1,87 @@
-pipeline{
+pipeline {
     agent any
 
-    environment{
+    environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')
-        DOCKER_IMAGE = "nicholaskamau/messaging_app"
+        DOCKER_IMAGE = "AymanMakram/messaging_app"
+        VENV_DIR = "venv"
     }
-    
-    stages{
-        stage('Checkout'){
-            steps{
-                git branch: "master",
-                    url: 'https://github.com/Nganga02/alx-backend-python.git',
-                    credentialsId: 'dg-github-creds-id' 
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: "main",
+                    url: 'https://github.com/AymanMakram/alx-backend-python.git',
+                    credentialsId: 'dg-github-creds-id'
             }
         }
-        stage('Verify Docker Connection'){
+
+        stage('Setup Python Environment') {
             steps {
                 sh '''
-                echo "Checking Docker connectivity..."
+                python3 --version
+                python3 -m venv ${VENV_DIR}
+                . ${VENV_DIR}/bin/activate
+                pip3 install --upgrade pip
+                pip3 install -r messaging_app/requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Tests with Pytest') {
+            steps {
+                sh '''
+                . ${VENV_DIR}/bin/activate
+                mkdir -p reports
+                pytest messaging_app/tests \
+                  --junitxml=reports/test-results.xml
+                '''
+            }
+        }
+
+        stage('Verify Docker Connection') {
+            steps {
+                sh '''
                 docker info
                 docker version
                 '''
             }
         }
-         stage('Build Production Docker Image') {
+
+        stage('Build Production Docker Image') {
             steps {
                 sh '''
-                docker build -t $DOCKER_IMAGE:latest -f messaging_app/Dockerfile messaging_app
+                docker build -t $DOCKER_IMAGE:latest \
+                  -f messaging_app/Dockerfile messaging_app
                 '''
             }
         }
-        stage('Push Production Docker Image') { 
-            steps { 
+
+        stage('Push Production Docker Image') {
+            steps {
                 sh '''
                 mkdir -p /tmp/docker-config
-                echo $DOCKERHUB_CREDENTIALS_PSW | docker --config /tmp/docker-config login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                echo $DOCKERHUB_CREDENTIALS_PSW | docker \
+                  --config /tmp/docker-config login \
+                  -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+
                 docker --config /tmp/docker-config push $DOCKER_IMAGE:latest
-                ''' 
-            } 
-        }
-        stage('Build Docker image for testing') {
-            steps {
-                sh '''
-                docker build -t $DOCKER_IMAGE:test -f $DOCKER_IMAGE/Dockerfile.test messaging_app
                 '''
             }
         }
-        stage('Run Tests in Container') {
-            steps {
-                sh '''
-                # Run the test container with a fixed name
-                docker run --name $DOCKER_IMAGE_test $DOCKER_IMAGE:test || true
-
-                # Copy the JUnit XML report out of the container
-                mkdir -p reports || true
-                docker cp $DOCKER_IMAGE_test:/tmp/test-results.xml reports/test-results.xml || true
-
-                # Remove the container after copying
-                docker rm -f $DOCKER_IMAGE_test || true
-                '''
-            }
-        }
-        stage('Publish Report') {
-            steps {
-                junit 'reports/test-results.xml'
-            }
-        }
-
     }
-    post{
-         always {
-            // Archive raw XML for download and traceability
+
+    post {
+        always {
+            junit 'reports/test-results.xml'
             archiveArtifacts artifacts: 'reports/test-results.xml', fingerprint: true
         }
         success {
-            echo 'Tests passed successfully!'
+            echo '✅ Tests passed and image pushed successfully!'
         }
         failure {
-            echo 'Tests failed. Check reports.'
+            echo '❌ Tests failed. Check pytest report.'
         }
     }
 }
